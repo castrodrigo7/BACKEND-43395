@@ -18,10 +18,17 @@ class CartManager {
         await fs.writeFile(this.path, JSON.stringify(carts));
     }
 
-    exist = async (id) =>{
-        let carts = await this.readCarts()
-        return carts.find(cart => cart.id === id)
-      }
+    exist = async (id) => {
+        let carts = await this.readCarts();
+        return carts.find((cart) => cart.id === id);
+    };
+
+    deleteCart = async (id) => {
+        let carts = await this.readCarts();
+        let filterCarts = carts.filter((cart) => cart.id != id);
+        await this.writeCarts(filterCarts);
+        return filterCarts;
+    };
 
     addCarts = async (carts) => {
         let cartsOld = await this.readCarts()
@@ -33,19 +40,20 @@ class CartManager {
 
     getCartsById = async (id) =>{
         let cartsById = await this.exist(id)
-        if(!cartsById) return "Carrito no encontrado"
+        if (!cartsById) return "Carrito no encontrado"
         return cartsById
       }
     
     addProductsInCarts = async (cartId, productId) =>{
         let cartsById = await this.exist(cartId)
-        if(!cartsById) return "Carrito no encontrado"
+        if (!cartsById) return "Carrito no encontrado"
         let productsById = await productAll.exist(productId)
-        if(!productsById) return "Producto no encontrado"
-        let cartsAll = await this.readCarts()
-        let cartFilter = cartsAll.filter(cart => cart.id != cartId)
+        if (!productsById) return "Producto no encontrado"
 
-        if(cartsById.products.some(prod => prod.id === productId)){
+        let cartsAll = await this.readCarts()
+        let cartFilter = cartsAll.filter((cart) => cart.id != cartId);
+
+        if (cartsById.products.some((prod) => prod.id === productId)) {
             let moreProductInCart = cartsById.products.find(prod => prod.id === productId)
             moreProductInCart.cantidad++
             let cartConcat = [cartsById, ...cartFilter]
@@ -53,7 +61,7 @@ class CartManager {
             return "Producto sumado al Carrito"
         }
 
-        cartsById.products.push({id : productsById.id, cantidad: 1})
+        cartsById.products.push({ id : productsById.id, cantidad: 1})
 
         let cartConcat = [cartsById, ...cartFilter]
         await this.writeCarts(cartConcat)
